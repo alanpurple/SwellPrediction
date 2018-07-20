@@ -1,5 +1,5 @@
 import tensorflow as tf
-from datetime import date,timedelta
+from datetime import timedelta,datetime
 import pandas as pd
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -25,7 +25,19 @@ swell_data=pd.read_sql_table('swell',engine,index_col='id')
 
 guryong=pd.read_sql_table('guryong',engine,index_col='id')
 
-temp=guryong[guryong.moment=='2014-11-01'].iloc[0].tolist()
-temp.pop(0)
+current_date=datetime(2014,1,1)
 
-current_date=date(2014,1,1)
+#temp_date=datetime(2014,11,1)
+#print(guryong.dtypes)
+#temp=guryong[guryong.moment==temp_date].iloc[0].tolist()
+#print(temp)
+#print(temp.pop(0))
+#print(temp)
+
+
+while current_date.year<2018:
+    weather=guryong[guryong.moment==current_date].iloc[0].tolist()
+    weather.pop(0)
+
+    pred_date=current_date+timedelta(1)
+    swells=swell_data[swell_data.moment==pred_date]
