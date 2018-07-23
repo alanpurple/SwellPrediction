@@ -77,8 +77,17 @@ while current_date.year<2018:
     else:
         prev_offset=0
         time_prev=swells_prev.iloc[0]['from_time']
+        prev_data=[]
         for i in range(len(swells_prev)-1):
-
+            if swells_prev.iloc[i]['to_time']>26:
+                if swells_prev.iloc[i]['from_time']<26:
+                    prev_data+=[swells_prev.iloc[i]['type']]*(swells_prev.iloc[i]['to_time']-26)
+                else:
+                    if swells_prev.iloc[i]['from_time']>26 and len(prev_data)==0:
+                        prev_data+=[0]*(swells_prev.iloc[i]['from_time']-26)
+                    prev_data+=[swells_prev.iloc[i]['type']]*(swells_prev.iloc[i]['to_time']-swells_prev.iloc[i]['from_time'])
+        if len(prev_data)<5:
+            prev_data+=[0]*(5-len(prev_data))
 
     # check for goal date
     if len(swells)==0 and swells.iloc[0]['from_time']==0:
