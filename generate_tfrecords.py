@@ -50,6 +50,8 @@ EVAL_DATES=[datetime(2014,3,14),datetime(2014,6,12),datetime(2014,8,13),datetime
     datetime(2016,4,21),datetime(2016,9,23),datetime(2016,12,21),datetime(2017,1,15),datetime(2017,5,24),datetime(2017,8,14),\
     datetime(2017,11,10)]
 
+total_data=[]
+
 while current_date.year<2018:
     weather=guryong[guryong.moment==current_date].iloc[0].tolist()
     weather.pop(0)
@@ -114,6 +116,13 @@ while current_date.year<2018:
                     pred_series+=[0]*(31-i)
             else:
                 swell_data_offeset+=1
-    
 
     current_date+=timedelta(1)
+
+    total_data.append([weather,prev_data,swell_data])
+
+print(len(total_data))
+
+
+print(total_data[3])
+print(total_data[10])
