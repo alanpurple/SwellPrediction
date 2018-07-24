@@ -1,4 +1,4 @@
-import tensorflow as tf
+﻿import tensorflow as tf
 from datetime import timedelta,datetime
 import pandas as pd
 from sqlalchemy import create_engine
@@ -92,13 +92,13 @@ while current_date.year<2018:
             prev_data+=[0]*(5-len(prev_data))
 
     # check for goal date
-    if len(swells)==0 and swells.iloc[0]['from_time']==0:
+    if len(swells)==1 and swells.iloc[0]['from_time']==0:
         assert swells.iloc[0]['to_time']==0
         assert swells.iloc[0]['type']==4
         current_date+=timedelta(1)
         goal_dates.append(pred_date)
         continue
-    if len(swells)==0:
+    elif len(swells)==0:
         pred_series=[0]*24
     else:
         pred_series=[]
