@@ -109,7 +109,11 @@ while current_date.year<2018:
                 pred_series+=[0]*(swell_fragment['from_time']-i)
             pred_series+=[swell_fragment['type']]*(swell_fragment['to_time']-swell_fragment['from_time'])
             i=swell_fragment['to_time']
-
+            if swell_data_offeset==len(swells)-1:
+                if i<31:
+                    pred_series+=[0]*(31-i)
+            else:
+                swell_data_offeset+=1
     
 
     current_date+=timedelta(1)
