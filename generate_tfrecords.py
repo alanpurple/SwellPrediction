@@ -37,13 +37,13 @@ current_date=datetime(2014,1,1)
 def _int64_feature(value):
     return tf.train.Feature(int64_list=tf.train.Int64List(value=[value]))
 
+def _int64_list_feature(elems):
+    return tf.train.Feature(int64_list=tf.train.Int64List(value=elems))
+
 def _float_list_feature(elems):
     return tf.train.Feature(float_list=tf.train.FloatList(value=elems))
 
 goal_dates=[]
-
-train_writer=tf_writer=tf.python_io.TFRecordWriter('swell_train.tfrecord')
-test_writer=tf_writer=tf.python_io.TFRecordWriter('swell_test.tfrecord')
 
 EVAL_DATES=[datetime(2014,3,14),datetime(2014,6,12),datetime(2014,8,13),datetime(2014,11,25),\
     datetime(2015,2,28),datetime(2015,8,25),datetime(2015,9,11),datetime(2015,11,28),datetime(2016,2,15),\
@@ -51,6 +51,7 @@ EVAL_DATES=[datetime(2014,3,14),datetime(2014,6,12),datetime(2014,8,13),datetime
     datetime(2017,11,10)]
 
 total_data=[]
+total_data_test=[]
 
 while current_date.year<2018:
     weather=guryong[guryong.moment==current_date]
@@ -123,11 +124,42 @@ while current_date.year<2018:
                 swell_data_offeset+=1
 
     current_date+=timedelta(1)
+    if pred_date in EVAL_DATES:
+        total_data_test.append([weather,prev_data,pred_series])
+    else:
+        total_data.append([weather,prev_data,pred_series])
 
-    total_data.append([weather,prev_data,pred_series])
+train_writer=tf_writer=tf.python_io.TFRecordWriter('swell_train.tfrecord')
+test_writer=tf_writer=tf.python_io.TFRecordWriter('swell_test.tfrecord')
 
-print(len(total_data))
+with tf.python_io.TFRecordWriter('swell_train.tfrecord') as writer:
+    for elem in total_data:
+        temp_list=elem[2]+elem[1]
+        assert len(temp_list)==29
+        for i in range(24):
+            example=tf.train.Example(
+                features=tf.train.Features(
+                    _int64_feature={
+                        'sequence':temp_list[i:i+5],
+                        'weather':elem[0],
+                        'label':elem[1][i]
+                        }
+                    )
+                )
+            writer.write(example.SerializeToString())
 
-
-print(total_data[3])
-print(total_data[10])
+with tf.python_io.TFRecordWriter('swell_test.tfrecord') as writer:
+    for elem in total_data_test:
+        temp_list=elem[2]+elem[1]
+        assert len(temp_list)==29
+        for i in range(24):
+            example=tf.train.Example(
+                features=tf.train.Features(
+                    _int64_feature={
+                        'sequence':temp_list[i:i+5],
+                        'weather':elem[0],
+                        'label':elem[1][i]
+                        }
+                    )
+                )
+            writer.write(example.SerializeToString())

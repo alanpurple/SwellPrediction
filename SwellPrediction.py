@@ -6,8 +6,6 @@ def RnnLinearCombined_model(features,labels,mode,params):
     seq_onehot=tf.one_hot(seq)
     weather=features['weather']
 
-    seq_len=params['seq_len']
-
     cell=tf.nn.rnn_cell.GRUCell(3)
 
     encoding=tf.nn.static_rnn(rnn_cell,seq_onehot)
