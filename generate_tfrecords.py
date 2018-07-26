@@ -139,10 +139,10 @@ with tf.python_io.TFRecordWriter('swell_train.tfrecord') as writer:
         for i in range(24):
             example=tf.train.Example(
                 features=tf.train.Features(
-                    _int64_feature={
-                        'sequence':temp_list[i:i+5],
-                        'weather':elem[0],
-                        'label':elem[1][i]
+                    feature={
+                        'sequence':_int64_list_feature(temp_list[i:i+5]),
+                        'weather':_float_list_feature(elem[0]),
+                        'label':_int64_feature(elem[1][i])
                         }
                     )
                 )
@@ -155,10 +155,10 @@ with tf.python_io.TFRecordWriter('swell_test.tfrecord') as writer:
         for i in range(24):
             example=tf.train.Example(
                 features=tf.train.Features(
-                    _int64_feature={
-                        'sequence':temp_list[i:i+5],
-                        'weather':elem[0],
-                        'label':elem[1][i]
+                    feature={
+                        'sequence':_int64_list_feature(temp_list[i:i+5]),
+                        'weather':_float_list_feature(elem[0]),
+                        'label':_int64_feature(elem[1][i])
                         }
                     )
                 )
