@@ -63,10 +63,11 @@ def RnnLinearCombined_model(features,labels,mode):
 if __name__=='__main__':
     tf.logging.set_verbosity(tf.logging.INFO)
 
-    swell_classifier=tf.estimator.Estimator(RnnLinearCombined_model,'./models',tf.estimator.RunConfig())
+    swell_classifier=tf.estimator.Estimator(RnnLinearCombined_model,'./models',tf.estimator.RunConfig(
+        save_checkpoints_secs=15))
 
     train_spec=tf.estimator.TrainSpec(input_fn=lambda: input_fn(train_path,15,True,32))
-    eval_Spec=tf.estimator.EvalSpec(input_fn=lambda: input_fn(test_path,1,True,4))
+    eval_Spec=tf.estimator.EvalSpec(input_fn=lambda: input_fn(test_path,1,True,4),throttle_secs=10)
 
     tf.estimator.train_and_evaluate(swell_classifier,train_spec,eval_Spec)
 
