@@ -142,7 +142,7 @@ with tf.python_io.TFRecordWriter('swell_train.tfrecord') as writer:
                     feature={
                         'sequence':_int64_list_feature(temp_list[i:i+5]),
                         'weather':_float_list_feature(elem[0]),
-                        'label':_int64_feature(elem[1][i])
+                        'label':_int64_feature(elem[2][i])
                         }
                     )
                 )
@@ -158,7 +158,7 @@ with tf.python_io.TFRecordWriter('swell_test.tfrecord') as writer:
                     feature={
                         'sequence':_int64_list_feature(temp_list[i:i+5]),
                         'weather':_float_list_feature(elem[0]),
-                        'label':_int64_feature(elem[1][i])
+                        'label':_int64_feature(elem[2][i])
                         }
                     )
                 )
