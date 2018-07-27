@@ -263,3 +263,5 @@ __pycache__/
 *.tfrecord
 /models_adadelta
 /models
+/models_wdo
+/models_wodo

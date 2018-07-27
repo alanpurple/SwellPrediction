@@ -32,7 +32,7 @@ def RnnLinearCombined_model(features,labels,mode,params):
     seq_onehot=tf.one_hot(seq,3,dtype=tf.float64)
     weather=features['weather']
     cells=[tf.nn.rnn_cell.GRUCell(3) for _ in range(4)]
-    if params['use_dropout']:
+    if params['use_dropout'] and mode==tf.estimator.ModeKeys.TRAIN:
         cells=[tf.nn.rnn_cell.DropoutWrapper(elem,0.9,0.9) for elem in cells]
     layered_cell=tf.nn.rnn_cell.MultiRNNCell(cells)
 
@@ -74,7 +74,7 @@ if __name__=='__main__':
     swell_classifier=tf.estimator.Estimator(RnnLinearCombined_model,model_path,tf.estimator.RunConfig(
         save_checkpoints_secs=15),params={'use_dropout':USE_DROPOUT})
 
-    train_spec=tf.estimator.TrainSpec(input_fn=lambda: input_fn(train_path,5,True,32))
+    train_spec=tf.estimator.TrainSpec(input_fn=lambda: input_fn(train_path,10,True,32))
     eval_Spec=tf.estimator.EvalSpec(input_fn=lambda: input_fn(test_path,1,False,4),throttle_secs=10)
 
     tf.estimator.train_and_evaluate(swell_classifier,train_spec,eval_Spec)
