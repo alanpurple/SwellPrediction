@@ -27,11 +27,13 @@ def input_fn(file,num_epochs,shuffle,batch_size):
     return iterator.get_next()
 
 
-def RnnLinearCombined_model(features,labels,mode):
+def RnnLinearCombined_model(features,labels,mode,params):
     seq=features['sequence']
     seq_onehot=tf.one_hot(seq,3,dtype=tf.float64)
     weather=features['weather']
-    cells=[tf.nn.rnn_cell.DropoutWrapper(tf.nn.rnn_cell.GRUCell(3),0.9,0.9) for _ in range(4)]
+    cells=[tf.nn.rnn_cell.GRUCell(3) for _ in range(4)]
+    if params['use_dropout']:
+        cells=[tf.nn.rnn_cell.DropoutWrapper(elem,0.9,0.9) for elem in cells]
     layered_cell=tf.nn.rnn_cell.MultiRNNCell(cells)
 
     _,states=tf.nn.static_rnn(layered_cell,tf.unstack(tf.transpose(seq_onehot, perm=[1, 0, 2])),dtype=tf.float64)
@@ -59,15 +61,21 @@ def RnnLinearCombined_model(features,labels,mode):
         }
     return tf.estimator.EstimatorSpec(mode,loss=loss,eval_metric_ops=eval_metric_ops)
 
+USE_DROPOUT=True
 
 if __name__=='__main__':
     tf.logging.set_verbosity(tf.logging.INFO)
 
-    swell_classifier=tf.estimator.Estimator(RnnLinearCombined_model,'./models',tf.estimator.RunConfig(
-        save_checkpoints_secs=15))
+    if USE_DROPOUT:
+        model_path='./models_wdo'
+    else:
+        model_path='./models_wodo'
 
-    train_spec=tf.estimator.TrainSpec(input_fn=lambda: input_fn(train_path,15,True,32))
-    eval_Spec=tf.estimator.EvalSpec(input_fn=lambda: input_fn(test_path,1,True,4),throttle_secs=10)
+    swell_classifier=tf.estimator.Estimator(RnnLinearCombined_model,model_path,tf.estimator.RunConfig(
+        save_checkpoints_secs=15),params={'use_dropout':USE_DROPOUT})
+
+    train_spec=tf.estimator.TrainSpec(input_fn=lambda: input_fn(train_path,5,True,32))
+    eval_Spec=tf.estimator.EvalSpec(input_fn=lambda: input_fn(test_path,1,False,4),throttle_secs=10)
 
     tf.estimator.train_and_evaluate(swell_classifier,train_spec,eval_Spec)
 
