@@ -4,6 +4,7 @@ import pandas as pd
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.automap import automap_base
+import pickle
 # from dbmodels import Wolpo,Swell
 
 seq_len=5
@@ -95,13 +96,14 @@ while current_date.year<2018:
                     prev_data+=[swells_prev.iloc[i]['type']]*(swells_prev.iloc[i]['to_time']-swells_prev.iloc[i]['from_time'])
         if len(prev_data)<5:
             prev_data+=[0]*(5-len(prev_data))
-
+    if pred_date.year==2015 and pred_date.month==12 and pred_date.day==13:
+        print(len(swells))
     # check for goal date
     if len(swells)==1 and swells.iloc[0]['from_time']==0:
         assert swells.iloc[0]['to_time']==0
         assert swells.iloc[0]['type']==4
         current_date+=timedelta(1)
-        goal_dates.append(pred_date)
+        goal_dates.append([pred_date,prev_data,weather])
         continue
     elif len(swells)==0:
         pred_series=[0]*24
@@ -129,6 +131,9 @@ while current_date.year<2018:
     else:
         total_data.append([weather,prev_data,pred_series])
 
+with open('prediction.pkl','wb') as f:
+    pickle.dump(goal_dates,f,pickle.HIGHEST_PROTOCOL)
+
 train_writer=tf_writer=tf.python_io.TFRecordWriter('swell_train.tfrecord')
 test_writer=tf_writer=tf.python_io.TFRecordWriter('swell_test.tfrecord')
 
@@ -137,29 +142,31 @@ with tf.python_io.TFRecordWriter('swell_train.tfrecord') as writer:
         temp_list=elem[2]+elem[1]
         assert len(temp_list)==29
         for i in range(24):
-            example=tf.train.Example(
-                features=tf.train.Features(
-                    feature={
-                        'sequence':_int64_list_feature(temp_list[i:i+5]),
-                        'weather':_float_list_feature(elem[0]),
-                        'label':_int64_feature(elem[2][i])
-                        }
+            if temp_list[i]>-1:
+                example=tf.train.Example(
+                    features=tf.train.Features(
+                        feature={
+                            'sequence':_int64_list_feature(temp_list[i:i+5]),
+                            'weather':_float_list_feature(elem[0]),
+                            'label':_int64_feature(elem[2][i])
+                            }
+                        )
                     )
-                )
-            writer.write(example.SerializeToString())
+                writer.write(example.SerializeToString())
 
 with tf.python_io.TFRecordWriter('swell_test.tfrecord') as writer:
     for elem in total_data_test:
         temp_list=elem[2]+elem[1]
         assert len(temp_list)==29
         for i in range(24):
-            example=tf.train.Example(
-                features=tf.train.Features(
-                    feature={
-                        'sequence':_int64_list_feature(temp_list[i:i+5]),
-                        'weather':_float_list_feature(elem[0]),
-                        'label':_int64_feature(elem[2][i])
-                        }
+            if temp_list[i]>-1:
+                example=tf.train.Example(
+                    features=tf.train.Features(
+                        feature={
+                            'sequence':_int64_list_feature(temp_list[i:i+5]),
+                            'weather':_float_list_feature(elem[0]),
+                            'label':_int64_feature(elem[2][i])
+                            }
+                        )
                     )
-                )
-            writer.write(example.SerializeToString())
+                writer.write(example.SerializeToString())
